@@ -11,3 +11,9 @@ copied from the original Numpy implementation at
 [google-research/fast-soft-sort](https://github.com/google-research/fast-soft-sort),
 with the isotonic regression solver rewritten as a PyTorch C++ and CUDA
 extension.
+
+# not currently pip installable
+if you want to use it
+1) clone the repo
+2) cd into project directory
+3) run pip install
