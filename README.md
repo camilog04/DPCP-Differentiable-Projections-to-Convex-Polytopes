@@ -16,4 +16,4 @@ extension.
 if you want to use it
 1) clone the repo
 2) cd into project directory
-3) run pip install
+3) run `pip install .`
