@@ -1,7 +1,5 @@
 # DPCP: Differentiable Projections to Convex Polytopes
 
-![Tests](https://github.com/teddykoker/torchsort/workflows/Tests/badge.svg)
-
 Fast, Differentiable projections to Convex Polytopes via reduction to isotonic optimization.
 
 NOTICE: This code builds on `https://github.com/teddykoker/torchsort` and generalizes 
