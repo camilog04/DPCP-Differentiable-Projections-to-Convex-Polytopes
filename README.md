@@ -12,7 +12,7 @@ copied from the original Numpy implementation at
 with the isotonic regression solver rewritten as a PyTorch C++ and CUDA
 extension.
 
-# not currently pip installable
+# not currently pip installable from PyPi
 if you want to use it
 1) clone the repo
 2) cd into project directory
