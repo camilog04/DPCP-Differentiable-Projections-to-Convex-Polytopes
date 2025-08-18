@@ -1,1 +1,1 @@
-from torchsort.ops import soft_rank, soft_sort
+from torchsort.ops import soft_rank, soft_sort, conv_proj

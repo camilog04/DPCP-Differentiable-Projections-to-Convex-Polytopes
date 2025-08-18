@@ -76,7 +76,6 @@ def _arange_like(x, reverse=False):
         ar = torch.arange(x.shape[1], dtype=x.dtype, device=x.device)
     return ar.expand(x.shape[0], -1)
 
-
 def _inv_permutation(permutation):
     # returns inverse permutation of 'permutation'. (assumes 2d, first dim batch)
     inv_permutation = torch.zeros_like(permutation)
@@ -152,3 +151,41 @@ class SoftSort(torch.autograd.Function):
         else:
             grad = isotonic_kl_backward[s.device.type](s, sol, grad_output)
         return grad.gather(1, inv_permutation), None, None
+
+# Generalization to convex Polytopes
+
+class conv_proj(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, tensor, polytope_basis, regularization="l2", regularization_strength=1.0,):
+        ctx.scale = 1.0 / regularization_strength
+        ctx.regularization = regularization
+        #w = _arange_like(tensor, reverse=True) + 1
+        w = polytope_basis
+        theta = tensor * ctx.scale
+        s, permutation = torch.sort(theta, descending=True)
+        inv_permutation = _inv_permutation(permutation)
+        if ctx.regularization == "l2":
+            dual_sol = isotonic_l2[s.device.type](s - w)
+            ret = (s - dual_sol).gather(1, inv_permutation)
+            factor = torch.tensor(1.0, device=s.device)
+        else:
+            dual_sol = isotonic_kl[s.device.type](s, torch.log(w))
+            ret = torch.exp((s - dual_sol).gather(1, inv_permutation))
+            factor = ret
+
+        ctx.save_for_backward(factor, s, dual_sol, permutation, inv_permutation)
+        return ret
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        factor, s, dual_sol, permutation, inv_permutation = ctx.saved_tensors
+        grad = (grad_output * factor).clone()
+        if ctx.regularization == "l2":
+            grad -= isotonic_l2_backward[s.device.type](
+                s, dual_sol, grad.gather(1, permutation)
+            ).gather(1, inv_permutation)
+        else:
+            grad -= isotonic_kl_backward[s.device.type](
+                s, dual_sol, grad.gather(1, permutation)
+            ).gather(1, inv_permutation)
+        return grad * ctx.scale, None, None
